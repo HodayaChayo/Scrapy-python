@@ -37,10 +37,11 @@ ROBOTSTXT_OBEY = False
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
-#    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-#    "Accept-Language": "en",
-#}
+DEFAULT_REQUEST_HEADERS = {
+   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+    'Accept-Language': 'he-IL,he;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+}
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
@@ -96,5 +97,5 @@ RETRY_TIMES = 5  # Default is 2; increase to handle more failures.
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408]
 
 FEED_FORMAT = 'csv'
-FEED_URI = 'dewalt.csv'
+#FEED_URI = 'dewalt.csv'
 FEED_EXPORT_ENCODING = 'utf-8'
