@@ -99,3 +99,15 @@ RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408]
 FEED_FORMAT = 'csv'
 #FEED_URI = 'dewalt.csv'
 FEED_EXPORT_ENCODING = 'utf-8'
+
+DOWNLOAD_HANDLERS = {
+    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+}
+# PLAYWRIGHT_LAUNCH_OPTIONS = {"headless": False,  } 
+
+
+PLAYWRIGHT_BROWSER_TYPE = "chromium"  # or 'firefox' or 'webkit'
+
+# Optional: Increase timeout
+PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 30 * 1000  # in milliseconds
