@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from openpyxl import Workbook
 
 class SitemapSpider(scrapy.Spider):
-    name = "yiron"
+    name = "articles"
     allowed_domains = ["yiron.co.il"]
     start_urls = ["https://yiron.co.il/"]
 
@@ -14,9 +14,7 @@ class SitemapSpider(scrapy.Spider):
     scraped_data = [] # in json for spliting to excel sheets
     
     # for attributes table
-    table_data = {
-    
-}
+    table_data = {}
  
 
     def clean_url(self, url):
@@ -50,7 +48,7 @@ class SitemapSpider(scrapy.Spider):
                 yield scrapy.Request(url, callback=self.parse)
 
     def is_product_page(self, response):
-        return bool(response.css('div[data-elementor-type="jet-woo-builder"]'))
+        return bool(response.css('div[data-elementor-type="wp-post"]'))
 
     def extract_product_details(self, response):
         soup = BeautifulSoup(response.text, "html.parser")
@@ -59,36 +57,41 @@ class SitemapSpider(scrapy.Spider):
         for key in self.table_data.keys():
             self.table_data[key] = None
 
-        breadcrumbs_href = response.css(".woocommerce-breadcrumb a ::attr(href)").getall()
-        breadcrumbs_text = response.css(".woocommerce-breadcrumb a ::text").getall()
+        breadcrumbs_href = response.css("#breadcrumbs a ::attr(href)").getall()
+        breadcrumbs_text = response.css("#breadcrumbs a ::text").getall()
         category_url = breadcrumbs_href[1] if len(breadcrumbs_href) >= 2 else ""
         category_name = breadcrumbs_text[1] if len(breadcrumbs_text) >= 2 else ""
         category_url2 = breadcrumbs_href[2] if len(breadcrumbs_href) >= 3 else ""
         category_name2 = breadcrumbs_text[2] if len(breadcrumbs_text) >= 3 else ""
-        category_url3 = breadcrumbs_href[3] if len(breadcrumbs_href) >= 4 else ""
-        category_name3 = breadcrumbs_text[3] if len(breadcrumbs_text) >= 4 else ""
-        product_url = response.url
-        product_name = response.css("h1.product_title ::text").get()
-        product_price = response.css(".elementor-widget-jet-single-price .price .woocommerce-Price-amount.amount bdi ::text").getall()[1]
-        # if product_price:
-        #     product_price = product_price.replace(u'\xa0', u'')
-        product_img = response.css('.swiper-wrapper .jet-woo-product-gallery__image-item img ::attr(src)').getall()
-        product_img_names = [re.search(r'/([^/]+)$', url).group(1) for url in product_img if re.search(r'/([^/]+)$', url)]
-        attr = response.xpath("//div[@class='elementor-widget-container']/span[contains(@class, 'elementor-heading-title')]/text()")
-        product_SKU = attr[0].re(r'מק"ט:\s*(\S+)')
-        materials = attr[1].re(r'חומרים:\s*(.+)') if len(attr) > 1 else None
-        delivery_cost = attr[2].re(r'עלות הובלה:\s*(.+)') if len(attr) > 2 else None
-        delivery_and_assembly = None
-        if not delivery_cost:
-            delivery_and_assembly = attr[2].re(r':\s*(.+)') if len(attr) > 2 else None
-        Assembly_cost = response.css('.ppom-option-label-price ::text').get()
-        Assembly_cost = Assembly_cost.strip("[]+") if Assembly_cost else None
-        colors = response.css('select[id^="pa"] option ::text').getall()[1:]
-        Assembly_instructions = response.css('.jet-listing-dynamic-link__link ::attr(href)').get()
-        description = ''.join(response.css('.jet-listing-dynamic-field__content .product ::text').getall())
-        descriptionHTML = response.css('.jet-listing-dynamic-field__content .product').getall()
-        if descriptionHTML:
-            descriptionHTML = self.remove_unwanted_attributes(descriptionHTML[0])
+        # category_url3 = breadcrumbs_href[3] if len(breadcrumbs_href) >= 4 else ""
+        # category_name3 = breadcrumbs_text[3] if len(breadcrumbs_text) >= 4 else ""
+        article_url = response.url
+        article_name = response.css('h1.elementor-heading-title ::text').get()
+        article_text = response.css('div[data-elementor-type="wp-post"] .elementor-widget-text-editor .elementor-widget-container ::text').getall()
+        articleHTML = response.css('div[data-elementor-type="wp-post"] .elementor-widget-text-editor .elementor-widget-container').getall()
+        if articleHTML:
+            articleHTML = self.remove_unwanted_attributes(articleHTML[0])
+        article_photos = response.css('div[data-elementor-type="wp-post"] .elementor-widget-text-editor .elementor-widget-container img:not([src^="data"]) ::attr(src)').getall()
+        # product_price = response.css(".elementor-widget-jet-single-price .price .woocommerce-Price-amount.amount bdi ::text").getall()[1]
+        # # if product_price:
+        # #     product_price = product_price.replace(u'\xa0', u'')
+        # product_img = response.css('.swiper-wrapper .jet-woo-product-gallery__image-item img ::attr(src)').getall()
+        # product_img_names = [re.search(r'/([^/]+)$', url).group(1) for url in product_img if re.search(r'/([^/]+)$', url)]
+        # attr = response.xpath("//div[@class='elementor-widget-container']/span[contains(@class, 'elementor-heading-title')]/text()")
+        # product_SKU = attr[0].re(r'מק"ט:\s*(\S+)')
+        # materials = attr[1].re(r'חומרים:\s*(.+)') if len(attr) > 1 else None
+        # delivery_cost = attr[2].re(r'עלות הובלה:\s*(.+)') if len(attr) > 2 else None
+        # delivery_and_assembly = None
+        # if not delivery_cost:
+        #     delivery_and_assembly = attr[2].re(r':\s*(.+)') if len(attr) > 2 else None
+        # Assembly_cost = response.css('.ppom-option-label-price ::text').get()
+        # Assembly_cost = Assembly_cost.strip("[]+") if Assembly_cost else None
+        # colors = response.css('select[id^="pa"] option ::text').getall()[1:]
+        # Assembly_instructions = response.css('.jet-listing-dynamic-link__link ::attr(href)').get()
+        # description = ''.join(response.css('.jet-listing-dynamic-field__content .product ::text').getall())
+        # descriptionHTML = response.css('.jet-listing-dynamic-field__content .product').getall()
+        # if descriptionHTML:
+        #     descriptionHTML = self.remove_unwanted_attributes(descriptionHTML[0])
     
 
         product_details = {
@@ -96,22 +99,25 @@ class SitemapSpider(scrapy.Spider):
             "category_name": category_name,
             "category_url2": category_url2,
             "category_name2": category_name2,
-            "category_url3": category_url3,
-            "category_name3": category_name3,
-            "product_url": product_url,
-            "product_name": product_name,
-            "product_SKU": product_SKU,
-            "product_price": product_price,
-            "materials": materials,
-            "delivery_cost": delivery_cost,
-            "Assembly_cost": Assembly_cost,
-            "delivery_and_assembly": delivery_and_assembly,
-            "colors": '\n'.join(colors),
-            "Assembly_instructions": Assembly_instructions,
-            "product_img": '\n'.join(product_img),
-            "product_img_names": '\n'.join(product_img_names),
-            "description": description,
-            "descriptionHTML": descriptionHTML,
+            # "category_url3": category_url3,
+            # "category_name3": category_name3,
+            "article_url": article_url,
+            "article_name": article_name,
+            "article_photos": '\n'.join(article_photos),
+            "article_text": ''.join(article_text),
+            "articleHTML": articleHTML,
+            # "product_SKU": product_SKU,
+            # "product_price": product_price,
+            # "materials": materials,
+            # "delivery_cost": delivery_cost,
+            # "Assembly_cost": Assembly_cost,
+            # "delivery_and_assembly": delivery_and_assembly,
+            # "colors": '\n'.join(colors),
+            # "Assembly_instructions": Assembly_instructions,
+            # "product_img": '\n'.join(product_img),
+            # "product_img_names": '\n'.join(product_img_names),
+            # "description": description,
+            # "descriptionHTML": descriptionHTML,
         }
 
         product_details.update(self.table_data)
